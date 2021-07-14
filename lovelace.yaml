@@ -5,30 +5,47 @@ views:
     path: sala-de-estar
     panel: true
     icon: 'mdi:sofa'
-    theme: clear
+    theme: ''
     badges: []
     cards:
       - type: 'custom:mod-card'
         style: |
           ha-card {
-            border-radius: 15px;
-            margin: 20px;
-            
             {% set o = state_attr('sensor.sala_de_estar_kodi', 'data') | from_json %}
-            {% if states['media_player.sala_de_estar_lg'].attributes.source == "MXQ" and 
-                  states['media_player.sala_de_estar_google'].attributes.app_name == "Kodi" and
-                  ( states['media_player.sala_de_estar_google'].state == "playing" or
-                    states['media_player.sala_de_estar_google'].state == "paused" ) %}
-            {%      print "background: url(" + o[0].thumbnail + ");" %}
-            {% endif %}
-              
+            {% if states['media_player.sala_de_estar_lg'    ].attributes.source             == "MXQ" 
+              and states['media_player.sala_de_estar_shield'].attributes.app_name           == "Kodi" 
+              and states['media_player.sala_de_estar_kodi'  ].attributes.media_content_type != "music"
+              and ( states['media_player.sala_de_estar_kodi'].state == "playing" 
+                 or states['media_player.sala_de_estar_kodi'].state == "paused" ) %}
+            {%   print "background: url(" + o[0].thumbnail + ");" %}
+            {% else %}
+            {%   print "background: url(https://image.freepik.com/free-photo/metal-texture-background_42612-327.jpg);" %}         
+            {% endif %}     
+            
           } 
         card:
           type: 'custom:config-template-card'
           variables:
-            CONTEUDO: >-
-              states["media_player.sala_de_estar_kodi"].attributes.media_content_type
-          entities: media_player.sala_de_estar_kodi
+            PLAYER: |
+              states['media_player.sala_de_estar_lg'].state != 'on' ? 
+                'NONE' : 
+                ( states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' ?
+                  'lg' :
+                  ( states['media_player.sala_de_estar_shield'].attributes.source != 'Kodi' ? 
+                    'shield':'kodi' ) )
+            CONTEUDO: >
+              states['media_player.sala_de_estar_kodi'].attributes.media_content_type
+            ESTADO: |
+              states['media_player.sala_de_estar_lg'].state != 'on' ? 
+               'NONE' : 
+               ( states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' ?
+                 states['media_player.sala_de_estar_lg' ].state :
+                 ( states['media_player.sala_de_estar_shield' ].attributes.source != 'Kodi' ? 
+                   states['media_player.sala_de_estar_shield' ].state :
+                   states['media_player.sala_de_estar_kodi' ].state ) )
+          entities:
+            - media_player.sala_de_estar_lg
+            - media_player.sala_de_estar_kodi
           card:
             type: 'custom:homekit-card'
             enableColumns: true
@@ -37,8 +54,6 @@ views:
               :host {
                   --tile-background: rgba(255, 255, 255, 0.5);
                   --tile-border-radius: 10px;
-                  --tile-width: 100px;
-                  --tile-height: 100px;
                   --tile-on-background: rgba(255, 255, 255, 0.7);
                   --tile-name-text-color: rgba(0, 0, 0, 0.7);
                   --tile-on-name-text-color: rgba(0, 0, 0, 1);
@@ -49,14 +64,16 @@ views:
                   --tile-value-text-color: rgba(255, 0, 0, 1);
                   --tile-icon-color: rgba(0, 0, 0, 0.7);
                   --tile-on-icon-color: #0a0a6b;
-                  --tile-width-mobile: 90px;
-                  --tile-height-mobile: 90px;
                   --min-header-height: 150px;
-                  --tile-icon-size: 25px;
+                  --tile-icon-size: 20px;
                   --tile-image-radius: 100%
                   --slider-width: 120px;
                   --slider-height: 120px;
-              }
+                  --tile-width-mobile: 90px;
+                  --tile-height-mobile: 90px;
+                  --tile-width: 90px;
+                  --tile-height: 90px;
+               }
               .transparente {
                  background-color: transparent!important;
                  border: 0!important;
@@ -67,7 +84,6 @@ views:
                  border: 0!important;
                  box-shadow: none!important;
               }
-
               .transparente .button-inner {
                 flex-direction: column!important; 
               }
@@ -86,35 +102,51 @@ views:
                   - column: 1
                     entities:
                       - entities:
-                          - custom: Desligar
+                          - custom: Power
                             icon: 'mdi:power'
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
                             halfheight: true
                             tap_action:
                               action: call-service
                               service: script.sala_de_estar_off
                               haptic: success
-                  - column: 2
-                    tileOnRow: 3
-                    entities:
-                      - entities:
-                          - entity: switch.sonoff_1000177267
-                            hideState: true
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:speaker'
+                            tap_action:
+                              action: call-service
+                              haptic: success
+                              service: switch.toggle
+                              service_data:
+                                entity: switch.sonoff_1000177267
                             halfheight: true
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:dot-net'
+                            tap_action:
+                              action: call-service
+                              haptic: success
+                              service: script.turn_on
+                              service_data:
+                                entity_id: script.sala_de_estar_net
+                            halfheight: true
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:apple'
+                            tap_action:
+                              action: call-service
+                              haptic: success
+                              service: script.turn_on
+                              service_data:
+                                entity_id: script.sala_de_estar_appletv
+                            halfheight: true
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:youtube'
+                            tap_action:
+                              action: call-service
+                              haptic: success
+                              service: script.turn_on
+                              service_data:
+                                entity_id: script.sala_de_estar_youtube
+                            halfheight: true
                           - custom: kodi
                             icon: 'mdi:kodi'
-                            name: '${CONTEUDO}'
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
                             tap_action:
                               action: call-service
                               haptic: success
@@ -132,24 +164,7 @@ views:
                                   artwork: material
                             halfheight: true
                           - custom: 'custom:button-card'
-                            icon: 'mdi:youtube'
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_youtube
-                            halfheight: true
-                          - custom: 'custom:button-card'
                             icon: 'mdi:netflix'
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
                             halfheight: true
                             tap_action:
                               action: call-service
@@ -173,324 +188,8 @@ views:
                                     texts: white
                                     background: 'rgba(80, 80, 80, .8 )'
                           - custom: 'custom:button-card'
-                            icon: 'mdi:apple'
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_appletv
                             halfheight: true
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:dot-net'
-                            conditionalClass: |
-                              [[[   
-                                return "transparente2";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_net
-                            halfheight: true
-                          - card: 'custom:mini-media-player'
-                            cardOptions:
-                              entity: media_player.sala_de_estar_shield
-                              artwork: full-cover
-                              hide:
-                                play_stop: false
-                                volume: false
-                                progress: false
-                            noPadding: true
-                            wider: true
-                            widerSize: 3
-                            higher: true
-                            higherSize: 2
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source == "Kodi"                                 
-                                    || ( states['media_player.sala_de_estar_shield'].state != "playing"
-                                      && states['media_player.sala_de_estar_shield'].state != "paused"
-                                       );
-                              ]]]
-                            cardStyle: |
-                              ha-card {
-                                height: 118%;
-                                background: none  !important;
-                                position: relative;
-                                font-size: 0.7vw !important;
-                                image
-                              }
-                              ha-card{
-                              overflow: hidden !important;
-                              }
-                              :host #primaryProgress{
-                              background: #474A52 !important; 
-                              display: flex !important;
-                              height: 100%;
-                              }
-                          - card: 'custom:mini-media-player'
-                            cardOptions:
-                              entity: media_player.sala_de_estar_kodi
-                              artwork: >-
-                                ${CONTEUDO === "music" ? "full-cover" :
-                                "full-cover"}
-                              hide:
-                                play_stop: false
-                                volume: false
-                            cardStyle: |
-                              ha-card {
-                                height: 118%;
-                                background: none  !important;
-                                position: relative;
-                                font-size: 0.7vw !important;
-                                image
-                              }
-                              ha-card{
-                              overflow: hidden !important;
-                              }
-                              :host #primaryProgress{
-                              background: #474A52 !important; 
-                              display: flex !important;
-                              height: 100%;
-                              }    
-                            noPadding: true
-                            wider: true
-                            widerSize: 3
-                            higher: '${CONTEUDO === "music" ? true : true}'
-                            higherSize: '${CONTEUDO === "music" ? 3 : 2}'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-                                    || ( states['media_player.sala_de_estar_kodi'].state != "playing"
-                                      && states['media_player.sala_de_estar_kodi'].state != "paused"
-                                       );
-                              ]]]
-                          - card: 'custom:mini-media-player'
-                            cardOptions:
-                              entity: media_player.sala_de_estar_lg
-                            noPadding: true
-                            wider: true
-                            widerSize: 3
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "HDMI 2"
-                                    || states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:menu'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: MENU
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:arrow-up-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: UP
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:information-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: INFO
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:arrow-left-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: LEFT
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:checkbox-blank-circle'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: ENTER
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:arrow-right-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: RIGHT
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:home'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: HOME
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:arrow-down-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: DOWN
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:undo-variant'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off";
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: BACK
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:home'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Home
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:information-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Info
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:menu'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: osd
-                            hold_action:
-                              action: call-service
-                              service: kodi.call_method
-                              haptic: light
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ContextMenu
-                          - custom: 'custom:button-card'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]              
-                            conditionalClass: |
-                              [[[   
-                                return "transparente";
-                              ]]]
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:arrow-up-circle-outline'
+                            icon: 'mdi:subtitles-outline'
                             hide: |
                               [[[
                                 return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
@@ -504,169 +203,8 @@ views:
                               service: kodi.call_method
                               service_data:
                                 entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Up
-                          - custom: 'custom:button-card'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]              
-                            conditionalClass: |
-                              [[[   
-                                return "transparente";
-                              ]]]
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:arrow-left-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Left
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:kodi'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Select
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:arrow-left-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Right
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:undo-variant'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Back
-                            conditionalClass: |
-                              [[[   
-                                return "transparente";
-                              ]]]
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:arrow-down-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Down
-                          - custom: 'custom:button-card'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]              
-                            conditionalClass: |
-                              [[[   
-                                return "transparente";
-                              ]]]                          
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:rewind-10'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: stepback
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:stop'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: stop
-                          - custom: 'custom:button-card'
-                            halfheight: true
-                            icon: 'mdi:fast-forward-10'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: stepforward
+                                method: GUI.ActivateWindow
+                                window: subtitlesearch
                           - custom: 'custom:button-card'
                             halfheight: true
                             icon: 'mdi:subtitles-outline'
@@ -737,14 +275,449 @@ views:
                               service_data:
                                 entity_id: media_player.sala_de_estar_kodi
                                 method: VideoLibrary.Clean
+              - row: 2
+                columns:
+                  - column: 1
+                    tileOnRow: 3
+                    entities:
+                      - entities:
+                          - card: conditional
+                            noPadding: true
+                            wider: true
+                            widerSize: 3
+                            higher: >-
+                              ${ ( PLAYER == "kodi" && ( ESTADO == "playing" ||
+                              ESTADO == "paused" ) || PLAYER == "shield" )}
+                            higherSize: |-
+                              ${ PLAYER   == "lg"     ? 1 :
+                                 PLAYER   == "shield" ? 2 :
+                                 CONTEUDO == "music"  ? 3 : 2 }
+                            cardOptions:
+                              conditions:
+                                - entity: media_player.sala_de_estar_lg
+                                  state: 'on'
+                              card:
+                                type: 'custom:mini-media-player'
+                                entity: '${"media_player.sala_de_estar_" + PLAYER}'
+                                artwork: |-
+                                  ${ PLAYER   == "lg"     ? "default"        :
+                                     PLAYER   == "shield" ? "full-cover"     :
+                                     CONTEUDO == "music"  ? "full-cover-fit" : "full-cover" }
+                                hide:
+                                  play_stop: false
+                                  volume: false
+                                  progress: false
+                                style: >
+                                  {%set a = '230px;' %}
+                                  {%set p = 'media_player.sala_de_estar_' %}
+                                  {%if states[p+'lg'].state == 'on' %}
+                                  {% if states[p+'lg'].attributes.source  == 'MXQ' %}
+                                  {%  if states[p+'shield'].attributes.source == 'Kodi' %} 
+                                  {%   if states[p+'kodi'].attributes.media_content_type == "music" %}
+                                  {%    set a = "345px;" %}
+                                  {%   else %}
+                                  {%    set a = "230px;" %}
+                                  {%   endif %}
+                                  {%  else %}
+                                  {%   set a = "230px;" %}
+                                  {%  endif %}
+                                  {% else %}
+                                  {%  set a = "120px;" %}
+                                  {% endif %}
+                                  {%else %}
+                                  {% set a = "100%;" %}
+                                  {%endif %}
+
+                                  ha-card { 
+                                    height: {% print a %}
+                                    --ha-card-background: rgba(0, 128, 0, 0.3)!important;
+                                    box-shadow: inset 10px 11px 8px -10px #CCC,
+                                                inset 10px -11px 8px -10px #CCC; !important; 
+                                    position: relative;
+                                    font-size: 0.5vw!important; 
+                                    image; 
+                                  }
+                                  ha-card { 
+                                    overflow:hidden!important; 
+                                  }
+                                  :host #primaryProgress {
+                                    background: rgba(0, 128, 0, 0.3)!important;
+                                    display: flex!important; 
+                                    height: 100%; 
+                                  }
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:home'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: HOME
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-up-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: UP
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:menu'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: MENU
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-left-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: LEFT
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:television'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: ENTER
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-right-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: RIGHT
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:undo-variant'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: BACK
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-down-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: DOWN
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:information-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source == "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off";
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: webostv.button
+                              service_data:
+                                entity_id: media_player.sala_de_estar_lg
+                                button: INFO
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:home'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Home
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-up-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Up
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:menu'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                            tap_action:
+                              action: call-service
+                              haptic: light
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.ExecuteAction
+                                action: osd
+                            hold_action:
+                              action: call-service
+                              service: kodi.call_method
+                              haptic: light
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.ContextMenu
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-left-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Left
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:kodi'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Select
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-right-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Right
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:undo-variant'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Back
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:arrow-down-circle-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Down
+                          - custom: 'custom:button-card'
+                            icon: 'mdi:information-outline'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
+                              ]]]                          
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.Info
                           - custom: 'custom:button-card'
                             halfheight: true
+                            icon: 'mdi:rewind-10'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.ExecuteAction
+                                action: stepback
+                          - custom: 'custom:button-card'
+                            halfheight: true
+                            icon: 'mdi:stop'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.ExecuteAction
+                                action: stop
+                          - custom: 'custom:button-card'
+                            halfheight: true
+                            icon: 'mdi:fast-forward-10'
+                            hide: |
+                              [[[
+                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
+                                    || states['media_player.sala_de_estar_lg'].state == "off"
+                                    || states['media_player.sala_de_estar_shield'].attributes.source != "Kodi"
+
+                              ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: kodi.call_method
+                              service_data:
+                                entity_id: media_player.sala_de_estar_kodi
+                                method: Input.ExecuteAction
+                                action: stepforward
+                          - custom: 'custom:button-card'
                             icon: 'mdi:home'
                             hide: |
                               [[[
                                 return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
                                     || states['media_player.sala_de_estar_lg'].state == "off"
                                     || states['media_player.sala_de_estar_shield'].attributes.source == "Kodi"
+                              ]]]
+                            conditionalClass: |
+                              [[[   
+                                return "transparente";
                               ]]]
                             tap_action:
                               haptic: light
@@ -754,20 +727,22 @@ views:
                                 entity_id: media_player.sala_de_estar_shield
                                 command: HOME
                           - custom: 'custom:button-card'
-                            halfheight: true
+                            icon: 'mdi:arrow-up-circle-outline'
                             hide: |
                               [[[
                                 return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
                                     || states['media_player.sala_de_estar_lg'].state == "off"
                                     || states['media_player.sala_de_estar_shield'].attributes.source == "Kodi"
 
-                              ]]]              
-                            conditionalClass: |
-                              [[[   
-                                return "transparente";
                               ]]]
+                            tap_action:
+                              haptic: light
+                              action: call-service
+                              service: androidtv.adb_command
+                              service_data:
+                                entity_id: media_player.sala_de_estar_shield
+                                command: UP
                           - custom: 'custom:button-card'
-                            halfheight: true
                             icon: 'mdi:menu'
                             hide: |
                               [[[
@@ -790,42 +765,6 @@ views:
                               service_data:
                                 entity_id: media_player.sala_de_estar_shield
                                 command: Input.ContextMenu
-                          - custom: 'custom:button-card'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source == "Kodi"
-
-                              ]]]              
-                            conditionalClass: |
-                              [[[   
-                                return "transparente";
-                              ]]]
-                          - custom: 'custom:button-card'
-                            icon: 'mdi:arrow-up-circle-outline'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source == "Kodi"
-
-                              ]]]
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: UP
-                          - custom: 'custom:button-card'
-                            hide: |
-                              [[[
-                                return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
-                                    || states['media_player.sala_de_estar_lg'].state == "off"
-                                    || states['media_player.sala_de_estar_shield'].attributes.source == "Kodi"
-
-                              ]]]              
                             conditionalClass: |
                               [[[   
                                 return "transparente";
@@ -847,7 +786,7 @@ views:
                                 entity_id: media_player.sala_de_estar_shield
                                 command: LEFT
                           - custom: 'custom:button-card'
-                            icon: 'mdi:checkbox-blank-circle-outline'
+                            icon: 'mdi:shield'
                             hide: |
                               [[[
                                 return states['media_player.sala_de_estar_lg'].attributes.source != "MXQ"
@@ -926,7 +865,8 @@ views:
                               [[[   
                                 return "transparente";
                               ]]]
-                  - column: 3
+                  - column: 1
+                    tileOnRow: 3
                     entities:
                       - title: Sala de Estar
                         popup:
@@ -1515,199 +1455,6 @@ views:
                     entities:
                       - entity: switch.sonoff_100046a3ee_1
                       - entity: switch.sonoff_100046a3ee_2
-  - title: Pátio
-    path: puxadinho
-    theme: clear
-    panel: true
-    icon: 'mdi:grill'
-    badges: []
-    cards:
-      - type: 'custom:homekit-card'
-        style: |
-          :host {
-            --tile-background: rgba(255, 255, 255, 0.5);
-            --tile-border-radius: 12px;
-            --tile-width: 100px;
-            --tile-height: 100px;
-            --tile-on-background: rgba(255, 255, 255, 0.6);
-            
-            --tile-name-text-color: rgba(0, 0, 0, 0.4);
-            --tile-on-name-text-color: rgba(0, 0, 0, 1);
-            
-            --tile-state-text-color: rgba(0, 0, 0, 0.4);
-            --tile-on-state-text-color: rgba(0, 0, 0, 1);
-            
-            --tile-state-changed-text-color: rgb(134, 134, 134);
-            --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);
-            
-            --tile-value-text-color: rgba(255, 0, 0, 1);
-            
-            
-            --tile-icon-color: rgba(0, 0, 0, 0.3);
-            --tile-on-icon-color: #0a0a6b;
-            
-            
-            --tile-width-mobile: 90px;
-            --tile-height-mobile: 90px;
-
-            --min-header-height: 150px;
-
-            --tile-icon-size: 30px;
-
-            --tile-image-radius: 100%
-
-            --slider-width: 120px;
-            --slider-height: 120px;
-          }
-          .card-title {
-            color: #0a0a6b;
-          }
-        enableColumns: true
-        tileHoldAnimation: true
-        rows:
-          - row: 1
-            columns:
-              - column: 1
-                entities:
-                  - entities:
-                      - entity: zone.home
-                        name: Desliga Tudo
-                        icon: 'mdi:power'
-                        wider: true
-                        widerSize: 3
-                        halfheight: true
-                        tap_action:
-                          action: call-service
-                          service: script.patio_off
-                          confirmation:
-                            text: Confirma?
-          - row: 2
-            columns:
-              - column: 1
-                tileOnRow: 3
-                entities:
-                  - title: Serviços de Mídia
-                    entities:
-                      - card: 'custom:mini-media-player'
-                        entity: media_player.patio_google
-                        noPadding: true
-                        wider: true
-                        widerSize: 3
-                        higher: true
-                        higherSize: 3
-                        hide: |
-                          [[[
-                            return states['media_player.patio_google'].state != "playing" 
-                                && states['media_player.patio_google'].state != "paused"  
-                            ;
-                          ]]]
-                        double_tap_action:
-                          action: popup
-                          entity: media_player.patio_google
-                        cardStyle: |
-                          ha-card {
-                            height: 100%;
-                            background: none  !important;
-                            box-shadow: none !important;
-                            position: relative;
-                            font-size: 1vw !important;
-                            image
-                          }
-                          ha-card {
-                            overflow: hidden !important;
-                          }
-                          :host #primaryProgress {
-                            background: #474A52 !important; 
-                            display: flex !important;
-                            height: 100%;
-                          }
-                        cardOptions:
-                          artwork: full-cover
-                          entity: media_player.patio_google
-                          hide:
-                            power: true
-                            progress: false
-                            runtime: false
-                            icon: true
-                            name: true
-                            source: true
-                            volume: false
-                            controls: false
-                      - entity: media_player.patio_yamaha
-                        wider: true
-                        popup:
-                          type: 'custom:media_player-popup-card'
-                          entity: media_player.patio_yamaha
-                          actions:
-                            - service: media_player.media_previous_track
-                              service_data:
-                                entity_id: this
-                              name: previous
-                              icon: 'mdi:skip-previous'
-                            - service: media_player.media_play_pause
-                              service_data:
-                                entity_id: this
-                              name: play/pause
-                              icon: 'mdi:play-pause'
-                            - service: media_player.media_next_track
-                              service_data:
-                                entity_id: this
-                              name: next
-                              icon: 'mdi:skip-next'
-                        tap_action:
-                          action: call-service
-                          service: media_player.toggle
-                          service_data:
-                            entity_id: media_player.patio_yamaha
-                      - entity: media_player.patio_google
-                        tap_action:
-                          action: call-service
-                          service: browser_mod.popup
-                          service_data:
-                            title: Pátio | Google
-                            card:
-                              type: 'custom:mod-card'
-                              card:
-                                type: 'custom:generic-remote-control-card'
-                                remote_template: mibox
-                                name: ''
-                                buttons:
-                                  power:
-                                    call: media_player.toggle
-                                    data:
-                                      entity_id: media_player.patio_google
-                                  ok:
-                                    call: media_player.media_play_pause
-                                    data:
-                                      entity_id: media_player.patio_google
-                                  top:
-                                    call: media_player.media_previous_track
-                                    data:
-                                      entity_id: media_player.patio_google
-                                  bottom:
-                                    call: media_player.media_next_track
-                                    data:
-                                      entity_id: media_player.patio_google
-                                  volumedown:
-                                    call: media_player.volume_down
-                                    data:
-                                      entity_id: media_player.patio_yamaha
-                                  volumeup:
-                                    call: media_player.volume_up
-                                    data:
-                                      entity_id: media_player.patio_yamaha
-              - column: 2
-                tileOnRow: 3
-                entities:
-                  - title: Iluminação
-                    popup:
-                      type: 'custom:light-popup-card'
-                    entities:
-                      - entity: switch.sonoff_1000e93740_2
-                      - entity: switch.sonoff_1000e93740_4
-                        wider: true
-                      - entity: switch.sonoff_1000e93740_3
-                      - entity: switch.sonoff_1000161cd3_1
   - title: Sala de Projeção & SPA
     path: sala-de-projecao--and-spa
     icon: 'mdi:projector'
@@ -2013,3 +1760,197 @@ views:
                       - entity: light.sonoff_1000d7963c
                       - entity: switch.sonoff_1000e93740_1
                       - entity: light.sonoff_1000d7976e
+  - title: Pátio
+    path: puxadinho
+    theme: clear
+    panel: true
+    icon: 'mdi:grill'
+    badges: []
+    cards:
+      - type: 'custom:homekit-card'
+        style: |
+          :host {
+            --tile-background: rgba(255, 255, 255, 0.5);
+            --tile-border-radius: 12px;
+            --tile-width: 100px;
+            --tile-height: 100px;
+            --tile-on-background: rgba(255, 255, 255, 0.6);
+            
+            --tile-name-text-color: rgba(0, 0, 0, 0.4);
+            --tile-on-name-text-color: rgba(0, 0, 0, 1);
+            
+            --tile-state-text-color: rgba(0, 0, 0, 0.4);
+            --tile-on-state-text-color: rgba(0, 0, 0, 1);
+            
+            --tile-state-changed-text-color: rgb(134, 134, 134);
+            --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);
+            
+            --tile-value-text-color: rgba(255, 0, 0, 1);
+            
+            
+            --tile-icon-color: rgba(0, 0, 0, 0.3);
+            --tile-on-icon-color: #0a0a6b;
+            
+            
+            --tile-width-mobile: 90px;
+            --tile-height-mobile: 90px;
+
+            --min-header-height: 150px;
+
+            --tile-icon-size: 30px;
+
+            --tile-image-radius: 100%
+
+            --slider-width: 120px;
+            --slider-height: 120px;
+          }
+          .card-title {
+            color: #0a0a6b;
+          }
+        enableColumns: true
+        tileHoldAnimation: true
+        rows:
+          - row: 1
+            columns:
+              - column: 1
+                entities:
+                  - entities:
+                      - entity: zone.home
+                        name: Desliga Tudo
+                        icon: 'mdi:power'
+                        wider: true
+                        widerSize: 3
+                        halfheight: true
+                        tap_action:
+                          action: call-service
+                          service: script.patio_off
+                          confirmation:
+                            text: Confirma?
+          - row: 2
+            columns:
+              - column: 1
+                tileOnRow: 3
+                entities:
+                  - title: Serviços de Mídia
+                    entities:
+                      - card: 'custom:mini-media-player'
+                        entity: media_player.patio_google
+                        noPadding: true
+                        wider: true
+                        widerSize: 3
+                        higher: true
+                        higherSize: 3
+                        hide: |
+                          [[[
+                            return states['media_player.patio_google'].state != "playing" 
+                                && states['media_player.patio_google'].state != "paused"  
+                            ;
+                          ]]]
+                        double_tap_action:
+                          action: popup
+                          entity: media_player.patio_google
+                        cardStyle: |
+                          ha-card {
+                            height: 100%;
+                            background: none  !important;
+                            box-shadow: none !important;
+                            position: relative;
+                            font-size: 1vw !important;
+                            image
+                          }
+                          ha-card {
+                            overflow: hidden !important;
+                          }
+                          :host #primaryProgress {
+                            background: #474A52 !important; 
+                            display: flex !important;
+                            height: 100%;
+                          }
+                        cardOptions:
+                          artwork: full-cover
+                          entity: media_player.patio_google
+                          hide:
+                            power: true
+                            progress: false
+                            runtime: false
+                            icon: true
+                            name: true
+                            source: true
+                            volume: false
+                            controls: false
+                      - entity: media_player.patio_yamaha
+                        wider: true
+                        popup:
+                          type: 'custom:media_player-popup-card'
+                          entity: media_player.patio_yamaha
+                          actions:
+                            - service: media_player.media_previous_track
+                              service_data:
+                                entity_id: this
+                              name: previous
+                              icon: 'mdi:skip-previous'
+                            - service: media_player.media_play_pause
+                              service_data:
+                                entity_id: this
+                              name: play/pause
+                              icon: 'mdi:play-pause'
+                            - service: media_player.media_next_track
+                              service_data:
+                                entity_id: this
+                              name: next
+                              icon: 'mdi:skip-next'
+                        tap_action:
+                          action: call-service
+                          service: media_player.toggle
+                          service_data:
+                            entity_id: media_player.patio_yamaha
+                      - entity: media_player.patio_google
+                        tap_action:
+                          action: call-service
+                          service: browser_mod.popup
+                          service_data:
+                            title: Pátio | Google
+                            card:
+                              type: 'custom:mod-card'
+                              card:
+                                type: 'custom:generic-remote-control-card'
+                                remote_template: mibox
+                                name: ''
+                                buttons:
+                                  power:
+                                    call: media_player.toggle
+                                    data:
+                                      entity_id: media_player.patio_google
+                                  ok:
+                                    call: media_player.media_play_pause
+                                    data:
+                                      entity_id: media_player.patio_google
+                                  top:
+                                    call: media_player.media_previous_track
+                                    data:
+                                      entity_id: media_player.patio_google
+                                  bottom:
+                                    call: media_player.media_next_track
+                                    data:
+                                      entity_id: media_player.patio_google
+                                  volumedown:
+                                    call: media_player.volume_down
+                                    data:
+                                      entity_id: media_player.patio_yamaha
+                                  volumeup:
+                                    call: media_player.volume_up
+                                    data:
+                                      entity_id: media_player.patio_yamaha
+              - column: 2
+                tileOnRow: 3
+                entities:
+                  - title: Iluminação
+                    popup:
+                      type: 'custom:light-popup-card'
+                    entities:
+                      - entity: switch.sonoff_1000e93740_2
+                      - entity: switch.sonoff_1000e93740_4
+                        wider: true
+                      - entity: switch.sonoff_1000e93740_3
+                      - entity: switch.sonoff_1000161cd3_1
+
