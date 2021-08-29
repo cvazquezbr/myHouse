@@ -5,821 +5,219 @@ views:
     path: sala-de-estar
     icon: mdi:sofa
     theme: clear
+    type: sidebar
     badges: []
     cards:
-      - type: custom:mod-card
+      - type: custom:config-template-card
+        variables:
+          PLAYER: |
+            states['media_player.sala_de_estar_lg'].state != 'on' ? 
+              'lg' : 
+              ( states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' ?
+                'lg' :
+                ( states['media_player.sala_de_estar_shield'].attributes.source != 'Kodi' ? 
+                  'shield':'kodi' ) )
+          CONTEUDO: >
+            states['media_player.sala_de_estar_kodi'].attributes.media_content_type
+          ESTADO: |-
+            states['media_player.sala_de_estar_lg'].state != 'on' ? 
+             'NONE' : 
+             ( states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' ?
+               states['media_player.sala_de_estar_lg' ].state :
+               ( states['media_player.sala_de_estar_shield' ].attributes.source != 'Kodi' ? 
+                 states['media_player.sala_de_estar_shield' ].state :
+                 states['media_player.sala_de_estar_kodi' ].state ) )
+          HIDE_LG: |-
+            states['media_player.sala_de_estar_lg'].attributes.source == 'MXQ' 
+            || states['media_player.sala_de_estar_lg'].state == 'off' ?
+                '[[[return 1]]]':'[[[return 0]]]'
+          HIDE_SHIELD: >-
+            states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ'
+
+            || states['media_player.sala_de_estar_lg'].state == 'off' 
+
+            || states['media_player.sala_de_estar_shield'].attributes.source ==
+            'Kodi' ?
+                '[[[return 1]]]':'[[[return 0]]]'
+          HIDE_KODI: >-
+            states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' 
+
+            || states['media_player.sala_de_estar_lg'].state == 'off' 
+
+            || states['media_player.sala_de_estar_shield'].attributes.source !=
+            'Kodi' ?
+                '[[[return 1]]]':'[[[return 0]]]'
+          KODI_SELECT_ICON: |
+            states['media_player.sala_de_estar_kodi'].state == 'playing' ?
+              'mdi:motion-pause-outline' :
+            states['media_player.sala_de_estar_kodi'].state == 'paused' ?
+              'mdi:motion-play-outline' : 'mdi:kodi'
+          KODI_SELECT_ACTION: |
+            states['media_player.sala_de_estar_kodi'].state == 'playing' ?
+              'pause' :
+            states['media_player.sala_de_estar_kodi'].state == 'paused' ?
+              'play' : 'noop'
+          CSS: >-
+            ':host {' +
+
+            '   --tile-background: rgba(255, 255, 255, 0.3); ' +
+
+            '   --tile-border-radius: 10px;' +
+
+            '   --tile-on-background: rgba(255, 255, 255, 0.7);' +
+
+            '   --tile-name-text-color: rgba(0, 0, 0, 0.7);' +
+
+            '   --tile-on-name-text-color: rgba(0, 0, 0, 1);' +
+
+            '   --tile-state-text-color: rgba(0, 0, 0, 0.7);' +
+
+            '   --tile-on-state-text-color: rgba(0, 0, 0, 1);' +
+
+            '   --tile-state-changed-text-color: rgb(134, 134, 134);' +
+
+            '   --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);' +
+
+            '   --tile-value-text-color: rgba(255, 0, 0, 1);' +
+
+            '   --tile-icon-color: rgba(0, 0, 0, 0.7);' +
+
+            '   --tile-on-icon-color: #0a0a6b;' +
+
+            '   --min-header-height: 80px;' +
+
+            '   --tile-icon-size: 20px;' +
+
+            '   --tile-image-radius: 100%' +
+
+            '   --slider-width: 120px;' +
+
+            '   --slider-height: 120px;' +
+
+            '   --tile-width-mobile: 30px;' +
+
+            '   --tile-height-mobile: 30px;' +
+
+            '   --tile-width: 30px;' +
+
+            '   --tile-height: 30px;' +
+
+            '} .fundo {' +
+
+            '   background-image:
+            url(http://192.168.1.230:8123/local/b.jpg)!important;'
+
+            +
+
+            '   background-size: cover!important;' +
+
+            '   background-repeat: no-repeat!important;' +
+
+            '   background-position: center!important;' +
+
+            '} .escondido { ' +
+
+            '   display: none;' +
+
+            '} .controle .icon {' +
+
+            '   display: block;' +
+
+            '   margin-left: auto;' +
+
+            '   margin-right: auto;' +
+
+            '   top: 50%;' +
+
+            '   left: 50%;' +
+
+            '   transform: translate(-50%, -50%);' +
+
+            '   position: absolute;' +
+
+
+            '} .transparente {' +
+
+            '   background-color: transparent!important;' +
+
+            '   border: 0!important;' +
+
+            '   box-shadow: none!important;' +
+
+            '} .transparente .button-inner {' +
+
+            '   flex-direction: column!important;' +
+
+            '} .transparente .name {' +
+
+            '   display: none!important; ' +
+
+            '} .transparente .icon {' +
+
+            '   display: block;' +
+
+            '   margin-left: auto;' +
+
+            '   margin-right: auto;' +
+
+            '   top: 50%;' +
+
+            '   left: 50%;' +
+
+            '   transform: translate(-50%, -50%);' +
+
+            '   position: absolute;' +
+
+            '} .card-title {' +
+
+            '   color: #0a0a6b;' +
+
+            '} .button.size-5.no-padding { '
+        entities:
+          - media_player.sala_de_estar_lg
+          - media_player.sala_de_estar_kodi
+          - media_player.sala_de_estar_shield
         card:
-          type: custom:config-template-card
-          variables:
-            PLAYER: |
-              states['media_player.sala_de_estar_lg'].state != 'on' ? 
-                'NONE' : 
-                ( states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' ?
-                  'lg' :
-                  ( states['media_player.sala_de_estar_shield'].attributes.source != 'Kodi' ? 
-                    'google':'kodi' ) )
-            CONTEUDO: >
-              states['media_player.sala_de_estar_kodi'].attributes.media_content_type
-            ESTADO: |-
-              states['media_player.sala_de_estar_lg'].state != 'on' ? 
-               'NONE' : 
-               ( states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ' ?
-                 states['media_player.sala_de_estar_lg' ].state :
-                 ( states['media_player.sala_de_estar_shield' ].attributes.source != 'Kodi' ? 
-                   states['media_player.sala_de_estar_shield' ].state :
-                   states['media_player.sala_de_estar_kodi' ].state ) )
-            HIDE_LG: >-
-              states['media_player.sala_de_estar_lg'].attributes.source ==
-              'MXQ' 
-
-              || states['media_player.sala_de_estar_lg'].state == 'off' ?
-                  '[[[return 1]]]':'[[[return 0]]]'
-            HIDE_SHIELD: >-
-              states['media_player.sala_de_estar_lg'].attributes.source != 'MXQ'
-
-              || states['media_player.sala_de_estar_lg'].state == 'off' 
-
-              || states['media_player.sala_de_estar_shield'].attributes.source
-              == 'Kodi' ?
-                  '[[[return 1]]]':'[[[return 0]]]'
-            HIDE_KODI: >-
-              states['media_player.sala_de_estar_lg'].attributes.source !=
-              'MXQ' 
-
-              || states['media_player.sala_de_estar_lg'].state == 'off' 
-
-              || states['media_player.sala_de_estar_shield'].attributes.source
-              != 'Kodi' ?
-                  '[[[return 1]]]':'[[[return 0]]]'
-          entities:
-            - media_player.sala_de_estar_lg
-            - media_player.sala_de_estar_kodi
-            - media_player.sala_de_estar_shield
-          card:
-            type: custom:homekit-card
-            enableColumns: true
-            tileHoldAnimation: true
-            style: |
-              :host {
-                  --tile-background: rgba(255, 255, 255, 0.3);
-                  --tile-border-radius: 10px;
-                  --tile-on-background: rgba(255, 255, 255, 0.7);
-                  --tile-name-text-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-name-text-color: rgba(0, 0, 0, 1);
-                  --tile-state-text-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-state-text-color: rgba(0, 0, 0, 1);
-                  --tile-state-changed-text-color: rgb(134, 134, 134);
-                  --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);
-                  --tile-value-text-color: rgba(255, 0, 0, 1);
-                  --tile-icon-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-icon-color: #0a0a6b;
-                  --min-header-height: 80px;
-                  --tile-icon-size: 20px;
-                  --tile-image-radius: 100%
-                  --slider-width: 120px;
-                  --slider-height: 120px;
-                  --tile-width-mobile: 90px;
-                  --tile-height-mobile: 90px;
-                  --tile-width: 90px;
-                  --tile-height: 90px;
-               }
-              .fundo {
-                 background-image: url(http://192.168.1.230:8123/local/b.jpg)!important;
-                 background-size: cover!important;
-                 background-repeat: no-repeat!important;
-                 background-position: center!important;
-
-               }
-               .icon {
-                  display: block;
-                  margin-left: auto;
-                  margin-right: auto;
-                  top: 50%;
-                  left: 50%;
-                  transform: translate(-50%, -50%);
-                  position: absolute;
-                  }
-              .transparente {
-                 background-color: transparent!important;
-                 border: 0!important;
-                 box-shadow: none!important;
-              }
-              .transparente .button-inner {
-                flex-direction: column!important;
-              }
-              .transparente .name {
-                display: none!important; 
-              }
-              .card-title {
-                color: #0a0a6b;
-              }
-            rows:
-              - row: 1
-                columns:
-                  - column: 1
-                    tileOnRow: 3
-                    entities:
-                      - entities:
-                          - custom: Power
-                            icon: mdi:power
-                            tileOnRow: 3
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              service: script.sala_de_estar_off
-                              haptic: success
-                          - card: conditional
-                            conditionalClass: '[[[return "fundo";]]]'
-                            noPadding: true
-                            wider: true
-                            widerSize: 3
-                            higher: true
-                            higherSize: |-
-                              ${ PLAYER   == "lg"     ? 1 :
-                                 PLAYER   == "shield" ? 2 :
-                                 CONTEUDO == "music"  ? 3 : 2 }
-                            cardOptions:
-                              conditions:
-                                - entity: media_player.sala_de_estar_lg
-                                  state: 'on'
-                              card:
-                                type: custom:mini-media-player
-                                entity: ${"media_player.sala_de_estar_" + PLAYER}
-                                artwork: |-
-                                  ${ PLAYER   == "lg"     ? "default"        :
-                                     PLAYER   == "shield" ? "full-cover"     :
-                                     CONTEUDO == "music"  ? "full-cover-fit" : "full-cover" }
-                                hide:
-                                  play_stop: false
-                                  volume: false
-                                  progress: false
-                                style: >
-                                  {%set a = '230px;' %}
-
-                                  {%set p = 'media_player.sala_de_estar_' %} 
-
-                                  {%if states[p+'lg'].state == 'on' %} 
-
-                                  {% if states[p+'lg'].attributes.source  ==
-                                  'MXQ' %}
-
-                                  {%  if states[p+'shield'].attributes.source ==
-                                  'Kodi' %} 
-
-                                  {%   if
-                                  states[p+'kodi'].attributes.media_content_type
-                                  == "music" %} {%    set a = "349px;" %} {%  
-                                  else %}
-
-                                  {%    set a = "230px;" %}
-
-                                  {%   endif %}
-
-                                  {%  else %}
-
-                                  {%   set a = "230px;" %}
-
-                                  {%  endif %}
-
-                                  {% else %}
-
-                                  {% set a = "120px;" %}
-
-                                  {% endif %}
-
-                                  {%else %}
-
-                                  {% set a = "100%;" %}
-
-                                  {%endif %}
-
-                                  ha-card { 
-                                    height: {% print a %}
-                                    --ha-card-background: rgba(0, 128, 0, 0.3)!important;
-                                    box-shadow: inset 10px  11px 8px -10px #CCC,
-                                                inset 10px -11px 8px -10px #CCC;!important; 
-                                    position: relative;
-                                    font-size: 1vw!important; 
-                                    image; 
-                                    overflow:hidden!important; 
-                                  }  
-                  - column: 1
-                    tileOnRow: 3
-                    entities:
-                      - entities:
-                          - custom: LG HOME
-                            icon: mdi:home
-                            hide: ${HIDE_LG}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: HOME
-                          - custom: LG UP
-                            icon: mdi:arrow-up-circle-outline
-                            hide: ${HIDE_LG}
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: UP
-                          - custom: LG MENU
-                            icon: mdi:menu
-                            hide: ${HIDE_LG}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: MENU
-                          - custom: LG LEFT
-                            icon: mdi:arrow-left-circle-outline
-                            hide: ${HIDE_LG}
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: LEFT
-                          - custom: LG ENTER
-                            icon: mdi:television
-                            hide: ${HIDE_LG}
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: ENTER
-                          - custom: LG RIGHT
-                            icon: mdi:arrow-right-circle-outline
-                            hide: ${HIDE_LG}
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: RIGHT
-                          - custom: LG BACK
-                            icon: mdi:undo-variant
-                            hide: ${HIDE_LG}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: BACK
-                          - custom: LG DOWN
-                            icon: mdi:arrow-down-circle-outline
-                            hide: ${HIDE_LG}
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: DOWN
-                          - custom: LG INFO
-                            icon: mdi:information-outline
-                            hide: ${HIDE_LG}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: webostv.button
-                              service_data:
-                                entity_id: media_player.sala_de_estar_lg
-                                button: INFO
-                          - custom: KODI HOME
-                            icon: mdi:home
-                            hide: ${HIDE_KODI}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Home
-                          - custom: KODI UP
-                            icon: mdi:arrow-up-circle-outline
-                            hide: ${HIDE_KODI}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Up
-                          - custom: KODI OSD
-                            icon: mdi:menu
-                            hide: ${HIDE_KODI}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: osd
-                            hold_action:
-                              action: call-service
-                              service: kodi.call_method
-                              haptic: light
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ContextMenu
-                          - custom: KODI LEFT
-                            icon: mdi:arrow-left-circle-outline
-                            hide: ${HIDE_KODI}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Left
-                          - custom: KODI ENTER
-                            icon: mdi:kodi
-                            hide: ${HIDE_KODI}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Select
-                          - custom: KODI RIGHT
-                            icon: mdi:arrow-right-circle-outline
-                            hide: ${HIDE_KODI}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Right
-                          - custom: KODI BACK
-                            icon: mdi:undo-variant
-                            hide: ${HIDE_KODI}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Back
-                          - custom: KODI DOWN
-                            icon: mdi:arrow-down-circle-outline
-                            hide: ${HIDE_KODI}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Down
-                          - custom: KODI INFO
-                            icon: mdi:information-outline
-                            hide: ${HIDE_KODI}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.Info
-                          - custom: SHIELD HOME
-                            icon: mdi:home
-                            hide: ${HIDE_SHIELD}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: HOME
-                          - custom: SHIELD UP
-                            icon: mdi:arrow-up-circle-outline
-                            hide: ${HIDE_SHIELD}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: UP
-                          - custom: SHIELD MENU
-                            icon: mdi:menu
-                            hide: ${HIDE_SHIELD}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              action: call-service
-                              haptic: light
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: MENU
-                            hold_action:
-                              action: call-service
-                              service: androidtv.adb_command
-                              haptic: light
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: Input.ContextMenu
-                          - custom: SHIELD LEFT
-                            icon: mdi:arrow-left-circle-outline
-                            hide: ${HIDE_SHIELD}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: LEFT
-                          - custom: SHIELD ENTER
-                            icon: mdi:shield
-                            hide: ${HIDE_SHIELD}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: CENTER
-                          - custom: SHIELD RIGHT
-                            icon: mdi:arrow-right-circle-outline
-                            hide: ${HIDE_SHIELD}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: RIGHT
-                          - custom: SHIELD BACK
-                            icon: mdi:undo-variant
-                            hide: ${HIDE_SHIELD}
-                            conditionalClass: '[[[return "transparente";]]]'
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: BACK
-                          - custom: SHIELD DOWN
-                            icon: mdi:arrow-down-circle-outline
-                            hide: ${HIDE_SHIELD}
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: androidtv.adb_command
-                              service_data:
-                                entity_id: media_player.sala_de_estar_shield
-                                command: DOWN
-                          - custom: SHIELD SPACE
-                            hide: ${HIDE_SHIELD}
-                            conditionalClass: '[[[return "transparente";]]]'
-      - type: vertical-stack
-        cards:
-          - type: custom:homekit-card
-            enableColumns: true
-            tileHoldAnimation: true
-            style: |
-              :host {
-                  --tile-background: rgba(255, 255, 255, 0.1);
-                  --tile-border-radius: 10px;
-                  --tile-on-background: rgba(255, 255, 255, 0.5);
-                  --tile-name-text-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-name-text-color: rgba(0, 0, 0, 1);
-                  --tile-state-text-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-state-text-color: rgba(0, 0, 0, 1);
-                  --tile-state-changed-text-color: rgb(134, 134, 134);
-                  --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);
-                  --tile-value-text-color: rgba(255, 0, 0, 1);
-                  --tile-icon-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-icon-color: #0a0a6b;
-                  --min-header-height: 150px;
-                  --tile-icon-size: 20px;
-                  --tile-image-radius: 100%
-                  --slider-width: 120px;
-                  --slider-height: 120px;
-                  --tile-width-mobile: 30px;
-                  --tile-height-mobile: 85px;
-                  --tile-width: 30px;
-                  --tile-height: 85px;
-               }
-               .card-title {
-                  color: #0a0a6b;
-               }
-            rows:
-              - row: 1
-                columns:
-                  - column: 1
-                    tileOnRow: 6
-                    entities:
-                      - title: Canais
-                        entities:
-                          - custom: KARAOKE
-                            icon: mdi:speaker
-                            conditionalClass: '[[[return "transparente";]]]'
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: switch.toggle
-                              service_data:
-                                entity_id: switch.sonoff_1000177267
-                          - custom: NET
-                            icon: mdi:dot-net
-                            conditionalClass: '[[[return "transparente";]]]'
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_net
-                          - custom: APPLE
-                            icon: mdi:apple
-                            conditionalClass: '[[[return "transparente";]]]'
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_appletv
-                          - custom: YOUTUBE
-                            icon: mdi:youtube
-                            conditionalClass: '[[[return "transparente";]]]'
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_youtube
-                          - custom: KODI
-                            icon: mdi:kodi
-                            conditionalClass: '[[[return "transparente";]]]'
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_kodi
-                            hold_action:
-                              action: fire-dom-event
-                              browser_mod:
-                                command: popup
-                                title: Kodi
-                                card:
-                                  type: custom:mini-media-player
-                                  entity: media_player.sala_de_estar_kodi
-                                  artwork: material
-                          - custom: NETFLIX
-                            icon: mdi:netflix
-                            conditionalClass: '[[[return "transparente";]]]'
-                            halfheight: true
-                            tap_action:
-                              action: call-service
-                              haptic: success
-                              service: script.turn_on
-                              service_data:
-                                entity_id: script.sala_de_estar_netflix
-                            hold_action:
-                              action: fire-dom-event
-                              browser_mod:
-                                command: popup
-                                title: LG
-                                card:
-                                  type: custom:lg-remote-control
-                                  entity: media_player.sala_de_estar_lg
-                                  dimensions:
-                                    scale: 0.98
-                                    border_width: 0px
-                                  colors:
-                                    buttons: rgba(255,255,255,0.3)
-                                    texts: white
-                                    background: rgba(80, 80, 80, .8 )
-                  - column: 2
-                    tileOnRow: 6
-                    entities:
-                      - title: Servidor de Mídia
-                        entities:
-                          - custom: KODI STEP -
-                            halfheight: true
-                            wider: true
-                            widerSize: 2
-                            icon: mdi:rewind-10
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: stepback
-                          - custom: KODI STOP
-                            halfheight: true
-                            wider: true
-                            widerSize: 2
-                            icon: mdi:stop
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: stop
-                          - custom: KODI STEP +
-                            halfheight: true
-                            wider: true
-                            widerSize: 2
-                            icon: mdi:fast-forward-10
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: stepforward
-                          - custom: Procurar legendas
-                            name: Procurar legendas
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            icon: mdi:subtitles-outline
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: GUI.ActivateWindow
-                                window: subtitlesearch
-                          - custom: Mostrar legendas
-                            name: Mostrar legendas
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            icon: mdi:subtitles
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: Input.ExecuteAction
-                                action: showsubtitles
-                          - custom: Atualizar biblioteca de filmes
-                            name: Atualizar filmes
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            icon: mdi:movie-open-outline
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: VideoLibrary.Scan
-                          - custom: Limpar biblioteca de filmes
-                            name: Limpar filmes
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            icon: mdi:movie-open-off-outline
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: VideoLibrary.Clean
-                          - custom: Atualizar biblioteca de filmes
-                            name: Atualizar filmes
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            icon: mdi:music-note-outline
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: AudioLibrary.Scan
-                          - custom: Limpar Músicas
-                            name: Limpar Músicas
-                            wider: true
-                            widerSize: 3
-                            halfheight: true
-                            icon: mdi:music-note-off-outline
-                            tap_action:
-                              haptic: light
-                              action: call-service
-                              service: kodi.call_method
-                              service_data:
-                                entity_id: media_player.sala_de_estar_kodi
-                                method: AudioLibrary.Clean
-          - type: vertical-stack
-            cards:
-              - type: markdown
-                content: |
-                  <h3><font color = #0a0a6b>  Em cartaz</font></h3>
-                style: |
-                  ha-card {
-                   {% if states['media_player.sala_de_estar_lg'    ].attributes.source             != 'MXQ' 
-                      or states['media_player.sala_de_estar_shield'].attributes.app_name           != 'Kodi'
-                      or states['media_player.sala_de_estar_kodi'  ].attributes.media_content_type == 'music'
-                      or ( states['media_player.sala_de_estar_kodi'].state != 'playing' 
-                       and states['media_player.sala_de_estar_kodi'].state != 'paused' ) %}
-                   {%   print 'display: none;' %}
-                   {% endif %}
-                   
-                   background: transparent;
-                   border-style: none!important;
-                   border: 0px!important;
-                  }
-              - type: custom:mod-card
-                style: |
-                  ha-card {
-                   {% set o = state_attr('sensor.sala_de_estar_kodi', 'data') | from_json %}
-                   {% if states['media_player.sala_de_estar_lg'    ].attributes.source             == 'MXQ' 
-                     and states['media_player.sala_de_estar_shield'].attributes.app_name           == 'Kodi'
-                     and states['media_player.sala_de_estar_kodi'  ].attributes.media_content_type != 'music'
-                     and ( states['media_player.sala_de_estar_kodi'].state == 'playing' 
-                        or states['media_player.sala_de_estar_kodi'].state == 'paused' ) %}
-                   {%   print 'background: url(' + o[0].thumbnail + ');' %}
-                   {%   print 'background-position: left!important;' %}
-                   {%   print 'background-repeat: no-repeat;' %}
-                   {%   print 'background-size: cover;' %}
-                   {%   print 'border-radius: 0px;' %}
-                   {%   print 'border-style:solid;' %}
-                   {%   print 'border-width:2px;' %}
-                   {%   print 'border-color: #ffffff;' %}
-                   {%   print 'box-shadow: 0px 0px 3px 3px #CCC!important;' %}      
-                   {%   print 'overflow:hidden!important;' %} 
-                   {%   print 'width: 360px;' %}
-                   {%   print 'height: 540px;' %}
-                   {%   print 'margin-right: 20px;' %}
-                   {%   print 'margin-left: 20px;' %}
-                   {% else %}
-                   {%   print 'display: none;' %}
-                   {% endif %}
-                   }
-                card:
-                  type: custom:homekit-card
-                  style: |
-                    :host {
-                        --tile-background: rgba(255, 255, 255, 0.1);
-                        --tile-border-radius: 10px;
-                        --tile-on-background: rgba(255, 255, 255, 0.5);
-                        --tile-name-text-color: rgba(0, 0, 0, 0.7);
-                        --tile-on-name-text-color: rgba(0, 0, 0, 1);
-                        --tile-state-text-color: rgba(0, 0, 0, 0.7);
-                        --tile-on-state-text-color: rgba(0, 0, 0, 1);
-                        --tile-state-changed-text-color: rgb(134, 134, 134);
-                        --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);
-                        --tile-value-text-color: rgba(255, 0, 0, 1);
-                        --tile-icon-color: rgba(0, 0, 0, 0.7);
-                        --tile-on-icon-color: #0a0a6b;
-                        --min-header-height: 150px;
-                        --tile-icon-size: 20px;
-                        --tile-image-radius: 100%
-                        --slider-width: 120px;
-                        --slider-height: 120px;
-                        --tile-width-mobile: 30px;
-                        --tile-height-mobile: 85px;
-                        --tile-width: 30px;
-                        --tile-height: 85px;
-                     }
+          type: custom:homekit-card
+          enableColumns: true
+          tileHoldAnimation: true
+          style: |-
+            ${states['media_player.sala_de_estar_lg'].state == 'on' ?
+              CSS + "width: 349px!important; }" : 
+              CSS + "display: none!important;" }
+          rows:
+            - row: 1
+              columns:
+                - column: 1
+                  tileOnRow: 6
                   entities:
                     - entities:
+                        - custom: Power
+                          icon: mdi:power
+                          noPadding: true
+                          conditionalClass: '[[[return "controle";]]]'
+                          higher: true
+                          higherSize: 1
+                          wider: true
+                          widerSize: 5
+                          tap_action:
+                            action: call-service
+                            service: script.sala_de_estar_off
+                            haptic: success
+                        - card: custom:mini-media-player
+                          noPadding: true
+                          higher: true
+                          higherSize: 2
+                          wider: true
+                          widerSize: 5
+                          cardOptions:
+                            entity: ${'media_player.sala_de_estar_' + PLAYER}
+                            artwork: cover
+                - column: 2
+                  tileOnRow: 6
+                  entities:
+                    - title: O quer fazer?
+                      entities:
                         - custom: KARAOKE
                           icon: mdi:speaker
                           conditionalClass: '[[[return "transparente";]]]'
@@ -850,163 +248,751 @@ views:
                             service: script.turn_on
                             service_data:
                               entity_id: script.sala_de_estar_appletv
-          - type: custom:homekit-card
-            enableColumns: true
-            tileHoldAnimation: true
-            style: |
-              :host {
-                  --tile-background: rgba(255, 255, 255, 0.3);
-                  --tile-border-radius: 10px;
-                  --tile-on-background: rgba(255, 255, 255, 0.7);
-                  --tile-name-text-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-name-text-color: rgba(0, 0, 0, 1);
-                  --tile-state-text-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-state-text-color: rgba(0, 0, 0, 1);
-                  --tile-state-changed-text-color: rgb(134, 134, 134);
-                  --tile-unavailable-state-text-color: rgba(255, 0, 0, 1);
-                  --tile-value-text-color: rgba(255, 0, 0, 1);
-                  --tile-icon-color: rgba(0, 0, 0, 0.7);
-                  --tile-on-icon-color: #0a0a6b;
-                  --min-header-height: 150px;
-                  --tile-icon-size: 20px;
-                  --tile-image-radius: 100%
-                  --slider-width: 120px;
-                  --slider-height: 120px;
-                  --tile-width-mobile: 90px;
-                  --tile-height-mobile: 90px;
-                  --tile-width: 90px;
-                  --tile-height: 90px;
-                  position: relative;
-               }
-              .transparente {
-                 background-color: transparent!important;
-                 border: 0!important;
-                 box-shadow: none!important;
-              }
-              .fundo {
-                 background-color: rgba(255,255,255,1)!important;
-                 background-image: url(http://192.168.1.230:8123/local/b.jpg)!important;
-                 background-size: cover!important;
-                 background-repeat: no-repeat!important;
-                 background-position: center!important;
-              }
-              .transparente2 {
-                 background-color: rgba(255, 255, 255, 0.4)!important;
-                 border: 0!important;
-                 box-shadow: none!important;
-              }
-              .transparente .button-inner {
-                flex-direction: column!important; 
-              }
-              .transparente .name {
-                display: none!important; 
-              }
-              .transparente .icon {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-              }
-              .transparente2 .state {
-                display: none!important; 
-              }
-              .card-title {
-                color: #0a0a6b;
-              }
-            rows:
-              - row: 1
-                columns:
-                  - column: 1
-                    tileOnRow: 3
-                    entities:
-                      - title: Sala de Estar
-                        popup:
-                          type: custom:light-popup-card
-                        entities:
-                          - entity: switch.sonoff_1000161cd3_2
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_1000161cd3_2
-                          - entity: switch.sonoff_1000161cd3_4
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_1000161cd3_4
-                          - entity: switch.sonoff_1000161cd3_3
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_1000161cd3_3
-                      - title: Sala de Jantar
-                        popup:
-                          type: custom:light-popup-card
-                        entities:
-                          - entity: switch.sonoff_10007b7302_3
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_10007b7302_3
-                          - entity: switch.sonoff_10007b7302_2
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_10007b7302_2
-                          - entity: switch.sonoff_100046a3ee_4
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_100046a3ee_4
-                      - title: Quitutes da Deia
-                        popup:
-                          type: custom:light-popup-card
-                        entities:
-                          - entity: switch.sonoff_100046a3ee_3
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_100046a3ee_3
-                          - entity: switch.sonoff_10007b7302_1
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_10007b7302_1
-                          - entity: switch.sonoff_10007b7302_4
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_10007b7302_4
-                      - title: Escritório & Hall
-                        popup:
-                          type: custom:light-popup-card
-                        entities:
-                          - entity: switch.sonoff_1000177268
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_1000177268
-                          - entity: switch.sonoff_100046a3ee_1
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_100046a3ee_1
-                          - entity: switch.sonoff_100046a3ee_2
-                            tap_action:
-                              action: toggle
-                              haptic: light
-                              entity: switch.sonoff_100046a3ee_2
+                        - custom: YOUTUBE
+                          icon: mdi:youtube
+                          conditionalClass: '[[[return "transparente";]]]'
+                          halfheight: true
+                          tap_action:
+                            action: call-service
+                            haptic: success
+                            service: script.turn_on
+                            service_data:
+                              entity_id: script.sala_de_estar_youtube
+                        - custom: KODI
+                          icon: mdi:kodi
+                          conditionalClass: '[[[return "transparente";]]]'
+                          halfheight: true
+                          tap_action:
+                            action: call-service
+                            haptic: success
+                            service: script.turn_on
+                            service_data:
+                              entity_id: script.sala_de_estar_kodi
+                          hold_action:
+                            action: fire-dom-event
+                            browser_mod:
+                              command: popup
+                              title: Kodi
+                              card:
+                                type: custom:mini-media-player
+                                entity: media_player.sala_de_estar_kodi
+                                artwork: material
+                        - custom: NETFLIX
+                          icon: mdi:netflix
+                          conditionalClass: '[[[return "transparente";]]]'
+                          halfheight: true
+                          tap_action:
+                            action: call-service
+                            haptic: success
+                            service: script.turn_on
+                            service_data:
+                              entity_id: script.sala_de_estar_netflix
+                          hold_action:
+                            action: fire-dom-event
+                            browser_mod:
+                              command: popup
+                              title: []
+                              style:
+                                $: >-
+                                  .mdc-dialog .mdc-dialog__container { width:
+                                  100%; } .mdc-dialog .mdc-dialog__container
+                                  .mdc-dialog__surface { width:100%;
+                                  box-shadow:none; }
+                                .: >-
+                                  :host { --mdc-theme-surface: rgba(0,0,0,0);
+                                  --secondary-background-color: rgba(0,0,0,0);
+                                  --ha-card-background: rgba(0,0,0,0);
+                                  --mdc-dialog-scrim-color: rgba(0,0,0,0.8);
+                                  --mdc-dialog-min-height: 100%;
+                                  --mdc-dialog-min-width: 100%;
+                                  --mdc-dialog-max-width: 100%; }
+                                  mwc-icon-button { color: #0a0a6b; }
+                              card:
+                                type: custom:lg-remote-control
+                                entity: media_player.sala_de_estar_lg
+                                dimensions:
+                                  scale: 0.85
+                                  border_width: 0px
+                                colors:
+                                  buttons: rgba(250,250,250,1)
+                                  texts: rgb(0,0,0)
+                                  background: rgba(0, 0, 0, .5 )
+                - column: 3
+                  tileOnRow: 6
+                  entities:
+                    - entities:
+                        - custom: LG HOME
+                          icon: mdi:home
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: HOME
+                        - custom: LG UP
+                          icon: mdi:arrow-up-circle-outline
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: UP
+                        - custom: LG MENU
+                          icon: mdi:menu
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: MENU
+                        - custom: LG LEFT
+                          icon: mdi:arrow-left-circle-outline
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: LEFT
+                        - custom: LG ENTER
+                          icon: mdi:television
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: ENTER
+                        - custom: LG RIGHT
+                          icon: mdi:arrow-right-circle-outline
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: RIGHT
+                        - custom: LG BACK
+                          icon: mdi:undo-variant
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: BACK
+                        - custom: LG DOWN
+                          icon: mdi:arrow-down-circle-outline
+                          hide: ${HIDE_LG}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: DOWN
+                        - custom: LG INFO
+                          icon: mdi:information-outline
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          hide: ${HIDE_LG}
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: webostv.button
+                            service_data:
+                              entity_id: media_player.sala_de_estar_lg
+                              button: INFO
+                        - custom: KODI HOME
+                          icon: mdi:home
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.Home
+                        - custom: KODI UP
+                          icon: mdi:arrow-up-circle-outline
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.Up
+                        - custom: KODI OSD
+                          icon: mdi:menu
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: osd
+                          hold_action:
+                            action: call-service
+                            service: kodi.call_method
+                            haptic: light
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ContextMenu
+                        - custom: KODI LEFT
+                          icon: mdi:arrow-left-circle-outline
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: left
+                          double_tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: stepback
+                        - custom: KODI ENTER
+                          icon: ${KODI_SELECT_ICON}
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: select
+                          double_tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: ${KODI_SELECT_ACTION}
+                          hold_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: contextmenu
+                        - custom: KODI RIGHT
+                          icon: mdi:arrow-right-circle-outline
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: right
+                          double_tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.ExecuteAction
+                              action: stepforward
+                        - custom: KODI BACK
+                          icon: mdi:undo-variant
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.Back
+                        - custom: KODI DOWN
+                          icon: mdi:arrow-down-circle-outline
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.Down
+                        - custom: KODI INFO
+                          icon: mdi:information-outline
+                          hide: ${HIDE_KODI}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: kodi.call_method
+                            service_data:
+                              entity_id: media_player.sala_de_estar_kodi
+                              method: Input.Info
+                        - custom: SHIELD HOME
+                          icon: mdi:home
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: HOME
+                        - custom: SHIELD UP
+                          icon: mdi:arrow-up-circle-outline
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: UP
+                        - custom: SHIELD MENU
+                          icon: mdi:menu
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          conditionalClass: '[[[return "transparente";]]]'
+                          tap_action:
+                            action: call-service
+                            haptic: light
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: MENU
+                          hold_action:
+                            action: call-service
+                            service: androidtv.adb_command
+                            haptic: light
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: Input.ContextMenu
+                        - custom: SHIELD LEFT
+                          icon: mdi:arrow-left-circle-outline
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: LEFT
+                        - custom: SHIELD ENTER
+                          icon: mdi:shield
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: CENTER
+                        - custom: SHIELD RIGHT
+                          icon: mdi:arrow-right-circle-outline
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: RIGHT
+                        - custom: SHIELD BACK
+                          icon: mdi:undo-variant
+                          hide: ${HIDE_SHIELD}
+                          conditionalClass: '[[[return "transparente";]]]'
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: BACK
+                        - custom: SHIELD DOWN
+                          icon: mdi:arrow-down-circle-outline
+                          hide: ${HIDE_SHIELD}
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            haptic: light
+                            action: call-service
+                            service: androidtv.adb_command
+                            service_data:
+                              entity_id: media_player.sala_de_estar_shield
+                              command: DOWN
+                        - custom: SHIELD SPACE
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          hide: ${HIDE_SHIELD}
+                          conditionalClass: '[[[return "transparente";]]]'
+                - column: 4
+                  tileOnRow: 6
+                  entities:
+                    - title: Sala de Estar
+                      popup:
+                        type: custom:light-popup-card
+                      entities:
+                        - entity: switch.sonoff_1000161cd3_2
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_1000161cd3_2
+                        - entity: switch.sonoff_1000161cd3_4
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_1000161cd3_4
+                        - entity: switch.sonoff_1000161cd3_3
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_1000161cd3_3
+                    - title: Sala de Jantar
+                      popup:
+                        type: custom:light-popup-card
+                      entities:
+                        - entity: switch.sonoff_10007b7302_3
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_10007b7302_3
+                        - entity: switch.sonoff_10007b7302_2
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_10007b7302_2
+                        - entity: switch.sonoff_100046a3ee_4
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_100046a3ee_4
+                    - title: Quitutes da Deia
+                      popup:
+                        type: custom:light-popup-card
+                      entities:
+                        - entity: switch.sonoff_100046a3ee_3
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_100046a3ee_3
+                        - entity: switch.sonoff_10007b7302_1
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_10007b7302_1
+                        - entity: switch.sonoff_10007b7302_4
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_10007b7302_4
+                    - title: Escritório & Hall
+                      popup:
+                        type: custom:light-popup-card
+                      entities:
+                        - entity: switch.sonoff_1000177268
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_1000177268
+                        - entity: switch.sonoff_100046a3ee_1
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_100046a3ee_1
+                        - entity: switch.sonoff_100046a3ee_2
+                          wider: true
+                          widerSize: 2
+                          higher: true
+                          higherSize: 2
+                          tap_action:
+                            action: toggle
+                            haptic: light
+                            entity: switch.sonoff_100046a3ee_2
       - type: custom:config-template-card
         variables:
           getPoster: |
             temp => {
-              var a = states['sensor.sala_de_estar_kodi'].attributes.data;
-              var b = JSON.parse (a)
-              return b[0].thumbnail;
+              var shieldData = states['media_player.sala_de_estar_shield'].attributes.entity_picture;
+              if ( states['media_player.sala_de_estar_lg'].attributes.source == 'MXQ' ) {
+                 if ( states['media_player.sala_de_estar_shield'].attributes.app_name == 'Kodi' ) {
+                   var kodiData = states['sensor.sala_de_estar_kodi'].attributes.data;
+                   var kodiObject = JSON.parse (kodiData);
+                   return kodiObject[0].thumbnail;
+                 } else {
+                   return "https://192.168.1.230:8123" + states['media_player.sala_de_estar_shield'].attributes.entity_picture;
+                 }
+              }
+
+              return "";
+              
             }
         entities:
           - sensor.sala_de_estar_kodi
+          - media_player.sala_de_estar_lg
+          - media_player.sala_de_estar_kodi
         card:
-          type: picture
-          image: ${getPoster()}
+          type: custom:mod-card
+          style: |
+            ha-card {
+              {% set o = state_attr('sensor.sala_de_estar_kodi', 'data') | from_json %}
+              {% if states['media_player.sala_de_estar_lg'    ].attributes.source == 'MXQ' 
+                 and ( states['media_player.sala_de_estar_kodi'].state == 'playing' 
+                    or states['media_player.sala_de_estar_kodi'].state == 'paused' ) %}
+              {%   print 'border-radius: 12px!important;' %}
+              {%   print 'border-style: solid;' %}
+              {%   print 'border-width: 0px;' %}
+              {%   print 'border-color: #ffffff;' %}
+              {%   print 'box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3)!important;' %}      
+              {%   print 'margin-top: 3px;' %}
+              {%   print 'margin-right: 25px;' %}
+              {%   print 'margin-left: 25px;' %}
+              {%   print 'margin-bottom: 3px;' %}
+              {%   print 'max-width: 349px;' %}
+              {%   print 'padding: 0px!important;' %}
+              {%   print 'overflow: hidden;' %}
+              {% else %}
+              {%   print 'display: none!important;' %}
+              {% endif %}
+             }
+          card:
+            type: picture
+            ha-card-border-radius: 20px
+            image: ${getPoster()}
+            tap_action:
+              haptic: light
+              action: fire-dom-event
+              browser_mod:
+                command: popup
+                title: []
+                style:
+                  $: >-
+                    .mdc-dialog .mdc-dialog__container { width: 100%; }
+                    .mdc-dialog .mdc-dialog__container .mdc-dialog__surface {
+                    width:100%; box-shadow:none; }
+                  .: >-
+                    :host { --mdc-theme-surface: rgba(0,0,0,0);
+                    --secondary-background-color: rgba(0,0,0,0);
+                    --ha-card-background: rgba(0,0,0,0);
+                    --mdc-dialog-scrim-color: rgba(0,0,0,0.8);
+                    --mdc-dialog-min-height: 100%; --mdc-dialog-min-width: 100%;
+                    --mdc-dialog-max-width: 100%; } mwc-icon-button { color:
+                    #FFF; }
+                card:
+                  type: custom:media_player-popup-card
+                  entity: media_player.sala_de_estar_lg
+                  fullscreen: true
+                  icon: mdi:kodi
+                  actions:
+                    - service: kodi.call_method
+                      service_data:
+                        entity_id: media_player.sala_de_estar_kodi
+                        method: GUI.ActivateWindow
+                        window: subtitlesearch
+                      name: Procurar
+                      icon: mdi:subtitles-outline
+                    - service: kodi.call_method
+                      service_data:
+                        entity_id: media_player.sala_de_estar_kodi
+                        method: Input.ExecuteAction
+                        action: showsubtitles
+                      name: Mostrar
+                      icon: mdi:subtitles
+                    - service: kodi.call_method
+                      service_data:
+                        entity_id: media_player.sala_de_estar_kodi
+                        method: VideoLibrary.Scan
+                      name: Scan
+                      icon: mdi:movie-open-outline
+                    - service: kodi.call_method
+                      service_data:
+                        entity_id: media_player.sala_de_estar_kodi
+                        method: VideoLibrary.Clean
+                      name: Clean
+                      icon: mdi:movie-open-off-outline
+                    - service: kodi.call_method
+                      service_data:
+                        entity_id: media_player.sala_de_estar_kodi
+                        method: AudioLibrary.Scan
+                      name: Scan
+                      icon: mdi:music-note-outline
+                    - service: kodi.call_method
+                      service_data:
+                        entity_id: media_player.sala_de_estar_kodi
+                        method: AudioLibrary.Clean
+                      name: Clean
+                      icon: mdi:music-note-off-outline
   - title: ''
     path: quarto-de-hospedes
     theme: clear
@@ -2134,7 +2120,7 @@ views:
         refresh_interval: 0
         title: WAN
   - icon: mdi:network
-    theme: ''
+    theme: clear
     type: sidebar
     badges: []
     cards:
@@ -2183,16 +2169,13 @@ views:
           - entity: sensor.net_status
         hours_to_show: 24
         refresh_interval: 0
-      - type: custom:htc-weather-card
-        entity: weather.home
-        sun: sun.sun
-        high_low_entity:
-          entity_id: sensor.time_utc
-          name: UTC Time
-        renderForecast: true
-        theme:
-          name: dusk
-          weather_icon_set: default
-      - type: entities
-        entities:
-          - entity: weather.home
+  - badges: []
+    cards:
+      - type: button
+        tap_action:
+          action: toggle
+        entity: switch.projetor
+      - type: button
+        tap_action:
+          action: toggle
+        entity: switch.ac
